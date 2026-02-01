@@ -1,0 +1,59 @@
+# ===========================================
+# Risk Management Configuration
+# ===========================================
+# Portfolio-level risk controls and position sizing rules
+
+# ----- Position Sizing -----
+position_sizing:
+  method: "fixed_risk"  # Options: fixed_risk, kelly, equal_weight
+  risk_per_trade_pct: 1.0  # 1% of portfolio per trade
+  max_position_pct: 10.0   # No single position > 10% of portfolio
+  min_position_pct: 0.5    # Don't bother with tiny positions
+
+# ----- Stop Loss -----
+stop_loss:
+  method: "atr_multiple"  # Options: atr_multiple, fixed_pct, volatility_adjusted
+  atr_multiple: 2.0       # Stop at 2x ATR from entry
+  atr_period: 14          # 14-day ATR
+  max_stop_pct: 3.0       # Never risk more than 3% on a single trade
+
+# ----- Portfolio Limits -----
+portfolio:
+  max_total_exposure_pct: 100  # Total notional / portfolio value
+  max_long_exposure_pct: 80    # Max net long exposure
+  max_short_exposure_pct: 80   # Max net short exposure
+  
+  # Correlation limits
+  correlation_threshold: 0.7   # Positions with corr > 0.7 are "correlated"
+  max_correlated_positions: 3  # Max positions in same correlation group
+  max_correlated_exposure_pct: 25  # Max exposure to correlated positions
+
+# ----- Kill Switches -----
+kill_switches:
+  max_drawdown_pct: 8.0      # Halt all trading if DD > 8%
+  daily_loss_limit_pct: 2.0  # Stop trading for the day if loss > 2%
+  weekly_loss_limit_pct: 5.0 # Reduce size if weekly loss > 5%
+  
+  # Automatic actions
+  on_drawdown_breach: "halt_all"      # halt_all, reduce_size, notify_only
+  on_daily_loss_breach: "halt_today"  # halt_today, reduce_size, notify_only
+
+# ----- Volatility Targeting (optional) -----
+volatility_target:
+  enabled: false
+  target_vol_pct: 10.0  # Target 10% annualized portfolio volatility
+  lookback_days: 30     # Use 30-day realized vol for scaling
+  min_scale: 0.25       # Never scale below 25% of base size
+  max_scale: 2.0        # Never scale above 200% of base size
+
+# ----- Instrument-Specific Limits -----
+instrument_limits:
+  fx:
+    max_position_pct: 10.0
+    max_leverage: 10
+  crypto:
+    max_position_pct: 5.0   # Lower for volatile asset
+    max_leverage: 2
+  commodities:
+    max_position_pct: 8.0
+    max_leverage: 5

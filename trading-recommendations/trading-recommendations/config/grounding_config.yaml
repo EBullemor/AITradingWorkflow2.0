@@ -1,0 +1,118 @@
+# ===========================================
+# LLM Grounding Configuration
+# ===========================================
+# Settings for verifying LLM claims against sources
+
+# ----- Grounding Requirements -----
+grounding:
+  # Minimum score for output to be acceptable
+  min_confidence_threshold: 0.70   # Individual claim threshold
+  min_overall_score: 0.85          # % of claims that must be grounded
+  
+  # Require human review if score is low
+  require_human_review_below: 0.70
+  
+  # For MVP: use prompt-based grounding (simpler)
+  # For V1: use semantic similarity (more robust)
+  method: "prompt_based"  # Options: prompt_based, semantic_similarity
+
+# ----- Claim Extraction -----
+claim_extraction:
+  # Use LLM to extract claims from its own output
+  use_llm_extraction: true
+  extraction_prompt: "prompts/claim_extraction.txt"
+  
+  # Claim types to extract
+  claim_types:
+    - price_data      # "EUR/USD fell 0.5%"
+    - events          # "ECB raised rates"
+    - attributions    # "Powell said..."
+    - causal          # "Oil rose due to..."
+    
+  # Skip certain patterns (not verifiable)
+  skip_patterns:
+    - "may"
+    - "might"
+    - "could"
+    - "hypothesis"
+    - "speculation"
+
+# ----- Source Matching (for V1 semantic method) -----
+source_matching:
+  # Embedding model for semantic similarity
+  semantic_similarity_model: "all-MiniLM-L6-v2"
+  
+  # Source age limits
+  max_source_age_hours: 48  # Don't use sources older than 48h
+  
+  # Matching thresholds
+  similarity_threshold: 0.75  # Min similarity score to consider a match
+  top_k_sources: 5            # Return top 5 matching sources
+  
+  # Source corpus
+  source_types:
+    - bloomberg_news
+    - economic_calendar
+    - central_bank_statements
+    - price_data  # For numerical claims
+
+# ----- Numerical Claim Verification -----
+numerical_verification:
+  enabled: true
+  
+  # Tolerance for numerical claims
+  price_tolerance_pct: 0.5      # "EUR fell 0.5%" ± 0.5% is OK
+  date_tolerance_days: 1        # "Yesterday" can be off by 1 day
+  
+  # Data sources for verification
+  verify_against:
+    - processed_market_data
+    - bloomberg_snapshots
+
+# ----- Prompt-Based Grounding (MVP) -----
+prompt_based:
+  # Instructions for LLM to self-ground
+  system_prompt: |
+    You must cite sources for every factual claim using [SOURCE_ID] format.
+    If you cannot cite a source, prefix the claim with "Hypothesis:" or "Unverified:".
+    Do not fabricate sources or information.
+    
+  # Citation format
+  citation_format: "[{source_id}]"
+  citation_regex: "\\[(\\d+)\\]"
+  
+  # Source injection
+  inject_sources_in_prompt: true
+  max_sources_in_prompt: 20
+
+# ----- Reporting -----
+reporting:
+  # Generate grounding report for each LLM call
+  generate_report: true
+  report_path: "reports/grounding/grounding_{timestamp}.json"
+  
+  # What to include in report
+  include_in_report:
+    - overall_score
+    - total_claims
+    - grounded_claims
+    - ungrounded_claims_list
+    - source_references
+    - confidence_distribution
+    
+  # Flag ungrounded claims in output
+  flag_ungrounded_claims: true
+  ungrounded_flag: "[UNVERIFIED]"
+
+# ----- Audit Trail -----
+audit:
+  # Keep full audit trail for compliance
+  enabled: true
+  retention_days: 90
+  
+  store:
+    - original_llm_output
+    - extracted_claims
+    - source_matches
+    - grounding_scores
+    - final_output

@@ -1,0 +1,103 @@
+# ===========================================
+# Signal Aggregator Configuration
+# ===========================================
+# Rules for combining signals from multiple strategy pods
+
+# ----- Ensemble Weights -----
+# How much each strategy contributes to combined signals
+ensemble_weights:
+  fx_carry_momentum: 0.30    # Primary FX strategy
+  btc_trend_vol: 0.20        # Crypto exposure
+  commodities_ts: 0.25       # Commodities
+  cross_asset_risk: 0.15     # Affects sizing, not direction
+  mean_reversion: 0.10       # Opportunistic, lower weight
+
+# ----- Conflict Resolution -----
+conflict_resolution:
+  # When two strategies disagree on same instrument
+  confidence_threshold: 0.30  # Min confidence difference to pick winner
+  
+  # If confidence is similar (within threshold)
+  on_similar_confidence: "flag_conflicted"  # Options: flag_conflicted, use_higher, skip
+  
+  # Allow conflicted signals in output?
+  allow_conflicted_output: false
+  
+  # Log all conflicts for review
+  log_conflicts: true
+  conflict_log_path: "reports/aggregator/conflicts_{date}.json"
+
+# ----- Signal Combination -----
+combination:
+  # Same direction signals
+  same_direction:
+    method: "weighted_average"  # How to combine confidence
+    merge_rationales: true      # Combine rationales from all pods
+    use_conservative_stop: true # Use widest stop from contributing signals
+    position_size: "minimum"    # Use smallest position size (conservative)
+    
+  # Aggregate confidence calculation
+  confidence:
+    method: "weighted_average"
+    min_combined_confidence: 0.40  # Don't output if combined conf < 40%
+    max_combined_confidence: 0.95  # Cap at 95%
+
+# ----- Deduplication -----
+deduplication:
+  enabled: true
+  
+  # Time window for considering signals as duplicates
+  time_window_hours: 24
+  
+  # What makes two signals "duplicates"
+  duplicate_criteria:
+    same_instrument: true
+    same_direction: true
+    entry_price_tolerance_pct: 1.0  # Within 1% entry price
+    
+  # When duplicate found
+  on_duplicate:
+    update_if_stronger: true   # Update existing if new signal is stronger
+    extend_expiry: true        # Reset expiry timer
+    merge_rationales: false    # Keep original rationale
+
+# ----- Output Limits -----
+output_limits:
+  max_signals_per_instrument: 1  # Only 1 active signal per instrument
+  max_signals_per_day: 10        # Cap total daily output
+  max_signals_per_strategy: 5    # Cap per strategy (prevent runaway)
+  
+  # Instrument diversification
+  max_fx_signals: 4
+  max_commodity_signals: 3
+  max_crypto_signals: 2
+
+# ----- Cross-Asset Risk Integration -----
+# How Pod 4 (Cross-Asset Risk) affects other signals
+cross_asset_integration:
+  enabled: true
+  
+  # Risk-off regime actions
+  risk_off:
+    reduce_confidence_by: 0.20     # Reduce all signal confidence by 20%
+    exclude_high_beta: true        # Don't output high-beta trades
+    high_beta_instruments:
+      - AUDUSD
+      - BTCUSD
+      - HG
+      
+  # Risk-on regime actions  
+  risk_on:
+    boost_confidence_by: 0.10      # Slight confidence boost
+    allow_larger_positions: true   # Can use full position sizing
+
+# ----- Signal Quality Filters -----
+quality_filters:
+  # Minimum requirements to pass aggregation
+  min_confidence: 0.30
+  min_risk_reward: 1.0
+  max_correlation_with_existing: 0.85  # Skip if highly correlated with open signal
+  
+  # LLM grounding requirement
+  require_grounded_rationale: true
+  min_grounding_score: 0.70  # Can be lower than monitoring threshold for MVP
