@@ -1,0 +1,40 @@
+# Core dependencies
+numpy>=1.24.0
+pandas>=2.0.0
+python-dotenv>=1.0.0
+
+# Data sources
+yfinance>=0.2.0
+alpaca-trade-api>=3.0.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+torch>=2.0.0
+transformers>=4.30.0
+
+# Technical Analysis
+ta-lib>=0.4.0
+pandas-ta>=0.3.0
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.15.0
+
+# API & Web
+requests>=2.31.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Code quality
+ruff>=0.1.0
+
+# Utilities
+tqdm>=4.65.0
+pyyaml>=6.0.0
