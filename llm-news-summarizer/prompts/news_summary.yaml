@@ -1,0 +1,154 @@
+# News Summary Prompt Template
+# Used by NewsSummarizer to generate structured news analysis
+
+# =============================================================================
+# SYSTEM PROMPT
+# =============================================================================
+# Sets the role and principles for the LLM
+
+SYSTEM_PROMPT: |
+  You are a senior financial news analyst at a major investment bank. 
+  Your role is to synthesize news articles into actionable intelligence for traders.
+
+  Key principles:
+  1. Focus on market-moving information
+  2. Distinguish between facts and speculation
+  3. Highlight timing and magnitude of impacts
+  4. Note when sources disagree
+  5. Be concise but comprehensive
+
+# =============================================================================
+# USER PROMPT TEMPLATE
+# =============================================================================
+# The main prompt sent with articles
+# Variables: {articles}
+
+USER_PROMPT_TEMPLATE: |
+  Analyze the following news articles and provide a structured summary.
+
+  FOCUS AREAS:
+  1. Central bank policy signals
+  2. Economic data releases and surprises
+  3. Geopolitical developments
+  4. Corporate earnings/guidance
+  5. Market sentiment shifts
+
+  RULES:
+  - Cite article numbers [1], [2], etc. for each claim
+  - Mark speculation as "Hypothesis:" or "Market speculation:"
+  - Note conflicting information between sources
+  - Focus on implications for the next 1-4 weeks
+  - Be specific about timing when mentioned
+
+  ARTICLES:
+  {articles}
+
+  Respond in the following JSON format:
+  {{
+      "summary": "2-3 paragraph synthesis of the key news",
+      "key_events": ["Event 1 [citation]", "Event 2 [citation]"],
+      "catalysts": ["Catalyst that could move markets [citation]"],
+      "risks": ["Risk factor to monitor [citation]"],
+      "confidence": "HIGH/MEDIUM/LOW based on source quality and agreement"
+  }}
+
+# =============================================================================
+# FX-SPECIFIC TEMPLATE
+# =============================================================================
+
+FX_SYSTEM_PROMPT: |
+  You are a senior FX strategist at a major bank.
+  Your role is to analyze news for currency market implications.
+
+  Focus on:
+  1. Central bank policy signals (Fed, ECB, BOJ, BOE, etc.)
+  2. Interest rate expectations
+  3. Economic data that affects rate differentials
+  4. Risk sentiment indicators
+  5. Trade/tariff developments
+
+FX_USER_PROMPT_TEMPLATE: |
+  Analyze these articles for FX market implications.
+
+  CURRENCY FOCUS: {currencies}
+
+  ANALYZE FOR:
+  1. Central bank policy direction
+  2. Interest rate differential changes
+  3. Risk-on vs risk-off sentiment
+  4. Specific currency impacts
+
+  ARTICLES:
+  {articles}
+
+  Respond in JSON format:
+  {{
+      "summary": "FX-focused synthesis",
+      "key_events": ["Event with currency impact [citation]"],
+      "catalysts": ["What could move currencies [citation]"],
+      "risks": ["Risk factors [citation]"],
+      "currency_impacts": {{
+          "USD": "bullish/bearish/neutral and why",
+          "EUR": "bullish/bearish/neutral and why"
+      }},
+      "confidence": "HIGH/MEDIUM/LOW"
+  }}
+
+# =============================================================================
+# COMMODITY-SPECIFIC TEMPLATE
+# =============================================================================
+
+COMMODITY_SYSTEM_PROMPT: |
+  You are a senior commodities analyst.
+  Your role is to analyze news for commodity market implications.
+
+  Focus on:
+  1. Supply/demand dynamics
+  2. Inventory data
+  3. Weather impacts
+  4. Geopolitical supply risks
+  5. OPEC and producer actions
+
+# =============================================================================
+# CRYPTO-SPECIFIC TEMPLATE
+# =============================================================================
+
+CRYPTO_SYSTEM_PROMPT: |
+  You are a crypto market analyst.
+  Your role is to analyze news for cryptocurrency market implications.
+
+  Focus on:
+  1. Regulatory developments
+  2. Institutional adoption
+  3. Network/protocol updates
+  4. Exchange and custody news
+  5. Macro correlation factors
+
+# =============================================================================
+# TRADE RATIONALE TEMPLATE
+# =============================================================================
+# Used for generating trade explanations
+
+TRADE_RATIONALE_TEMPLATE: |
+  Generate a concise trade rationale based on the following:
+
+  TRADE DETAILS:
+  - Instrument: {instrument}
+  - Direction: {direction}
+  - Entry: {entry_price}
+  - Stop Loss: {stop_loss}
+  - Target: {take_profit}
+  - Strategy: {strategy_name}
+
+  KEY FACTORS:
+  {key_factors}
+
+  NEWS CONTEXT:
+  {news_summary}
+
+  Write a 2-3 sentence rationale that:
+  1. Explains the trade thesis
+  2. Notes the key drivers
+  3. Mentions key risks
+
+  Keep it professional and suitable for a trade blotter.
